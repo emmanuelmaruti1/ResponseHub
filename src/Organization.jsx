@@ -9,7 +9,7 @@ import "./OrganizationDashboard.css";
 
 
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api");
 
 
 
@@ -3499,7 +3499,7 @@ function Organization() {
                                     const normalizedUrl =
                                       fileUrl.startsWith("/") &&
                                       !fileUrl.startsWith("//")
-                                        ? `http://localhost:5000${fileUrl}`
+                                        ? `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api\/?$/, "")}${fileUrl}`
                                         : fileUrl.startsWith("//")
                                         ? `${window.location.protocol}${fileUrl}`
                                         : fileUrl;

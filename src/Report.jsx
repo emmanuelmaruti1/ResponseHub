@@ -7,7 +7,7 @@ import {
 } from "libphonenumber-js/max";
 import "./Report.css";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api");
 const MAX_FILE_SIZE = 1.5 * 1024 * 1024;
 const MAX_FILES = 3;
 

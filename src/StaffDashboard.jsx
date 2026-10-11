@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./StaffDashboard.css";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api");
 
 const STATUSES = ["Received", "In Progress", "Resolved", "Closed"];
 
@@ -199,7 +199,7 @@ async function makePreviewUrl(file) {
   }
 
   if (url.startsWith("/")) {
-    return { url: `http://localhost:5000${url}`, revoke: false };
+    return { url: `${(import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/api\/?$/, "")}${url}`, revoke: false };
   }
 
   return { url, revoke: false };

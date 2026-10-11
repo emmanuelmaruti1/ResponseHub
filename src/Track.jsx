@@ -11,7 +11,7 @@ import "./Pages.css";
 import "./Track.css";
 
 const API_URL =
-  "http://localhost:5000/api";
+  (import.meta.env.VITE_API_URL || "http://localhost:5000/api");
 
 function Track() {
   const [searchParams] =
