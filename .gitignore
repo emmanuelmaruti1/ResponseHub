@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Private uploads and user evidence
+uploads/
+server/uploads/
+evidence/
+server/evidence/
+
+# Backups and database dumps
+*.sql
+*.dump
+*.backup
+*.bak
+
+# Private keys and certificates
+*.pem
+*.key

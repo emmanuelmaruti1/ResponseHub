@@ -1,0 +1,446 @@
+/* =========================================================
+   RESPONSEHUB — ORGANIZATION REGISTRATION
+   Dedicated stylesheet
+========================================================= */
+
+.organization-login-page {
+  min-height: 100vh;
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  padding: 48px 20px 65px;
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(circle at 10% 10%, rgba(11, 99, 246, 0.08), transparent 30%),
+    radial-gradient(circle at 90% 85%, rgba(11, 99, 246, 0.06), transparent 30%),
+    #f5f8fc;
+
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #111827;
+
+  overflow-x: hidden;
+}
+
+
+/* =========================================================
+   REGISTRATION CARD
+========================================================= */
+
+.organization-login-page .organization-register-card {
+  width: 100%;
+  max-width: 610px;
+
+  align-self: flex-start;
+
+  background: #ffffff;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 23px;
+
+  padding: 42px 46px 36px;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 20px 60px rgba(17, 24, 39, 0.08),
+    0 4px 16px rgba(17, 24, 39, 0.04);
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.organization-login-page .login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 35px;
+
+  color: #111827;
+
+  font-size: 21px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+.organization-login-page .login-logo span {
+  width: 39px;
+  height: 39px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: #0b63f6;
+  color: #ffffff;
+
+  font-size: 19px;
+  font-weight: 800;
+
+  box-shadow:
+    0 7px 18px rgba(11, 99, 246, 0.22);
+}
+
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.organization-login-page .login-heading {
+  margin-bottom: 31px;
+}
+
+.organization-login-page .login-heading > span {
+  display: inline-block;
+
+  margin-bottom: 12px;
+
+  color: #0b63f6;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+.organization-login-page .login-heading h1 {
+  margin: 0 0 13px;
+
+  color: #111827;
+
+  font-size: 35px;
+  line-height: 1.14;
+
+  font-weight: 800;
+
+  letter-spacing: -1.1px;
+}
+
+.organization-login-page .login-heading p {
+  max-width: 530px;
+
+  margin: 0;
+
+  color: #6b7788;
+
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.organization-login-page form {
+  width: 100%;
+}
+
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+.organization-login-page .login-field {
+  margin-bottom: 19px;
+}
+
+.organization-login-page .login-field label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #293548;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   INPUTS + SELECT
+========================================================= */
+
+.organization-login-page .login-field input,
+.organization-login-page .login-field select {
+  width: 100%;
+  height: 52px;
+
+  padding: 0 15px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d8e0ea;
+  border-radius: 11px;
+
+  background: #fbfcfe;
+  color: #111827;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+
+/* Placeholder */
+
+.organization-login-page .login-field input::placeholder {
+  color: #9aa6b5;
+}
+
+
+/* Select */
+
+.organization-login-page .login-field select {
+  cursor: pointer;
+
+  appearance: auto;
+}
+
+
+/* Hover */
+
+.organization-login-page .login-field input:hover,
+.organization-login-page .login-field select:hover {
+  border-color: #c4cfdd;
+}
+
+
+/* Focus */
+
+.organization-login-page .login-field input:focus,
+.organization-login-page .login-field select:focus {
+  border-color: #0b63f6;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 4px rgba(11, 99, 246, 0.09);
+}
+
+
+/* =========================================================
+   REGISTER BUTTON
+========================================================= */
+
+.organization-login-page .login-submit {
+  width: 100%;
+  height: 54px;
+
+  margin-top: 9px;
+
+  border: none;
+  border-radius: 11px;
+
+  background: #0b63f6;
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 14px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 9px 20px rgba(11, 99, 246, 0.20);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.organization-login-page .login-submit:hover {
+  background: #0958dc;
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 12px 25px rgba(11, 99, 246, 0.26);
+}
+
+.organization-login-page .login-submit:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.organization-login-page .login-footer {
+  margin-top: 28px;
+
+  padding-top: 24px;
+
+  border-top: 1px solid #edf0f4;
+
+  text-align: center;
+}
+
+.organization-login-page .login-footer p {
+  margin: 0 0 9px;
+
+  color: #7a8695;
+
+  font-size: 13px;
+}
+
+.organization-login-page .login-footer button {
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #0b63f6;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.organization-login-page .login-footer button:hover {
+  color: #084bbd;
+  text-decoration: underline;
+}
+
+.organization-login-page .login-footer > a {
+  display: inline-block;
+
+  margin-top: 7px;
+
+  color: #667386;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  transition: color 0.2s ease;
+}
+
+.organization-login-page .login-footer > a:hover {
+  color: #0b63f6;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .organization-login-page {
+    padding: 35px 17px 50px;
+  }
+
+  .organization-login-page .organization-register-card {
+    padding: 34px 29px 30px;
+
+    border-radius: 19px;
+  }
+
+  .organization-login-page .login-logo {
+    margin-bottom: 29px;
+  }
+
+  .organization-login-page .login-heading h1 {
+    font-size: 31px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .organization-login-page {
+    padding: 20px 13px 35px;
+  }
+
+  .organization-login-page .organization-register-card {
+    padding: 28px 20px 26px;
+
+    border-radius: 16px;
+  }
+
+  .organization-login-page .login-logo {
+    gap: 8px;
+
+    margin-bottom: 26px;
+
+    font-size: 18px;
+  }
+
+  .organization-login-page .login-logo span {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 9px;
+
+    font-size: 17px;
+  }
+
+  .organization-login-page .login-heading {
+    margin-bottom: 26px;
+  }
+
+  .organization-login-page .login-heading > span {
+    font-size: 10px;
+    letter-spacing: 1.2px;
+  }
+
+  .organization-login-page .login-heading h1 {
+    font-size: 28px;
+    letter-spacing: -0.8px;
+  }
+
+  .organization-login-page .login-heading p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .organization-login-page .login-field {
+    margin-bottom: 17px;
+  }
+
+  .organization-login-page .login-field input,
+  .organization-login-page .login-field select {
+    height: 50px;
+
+    font-size: 14px;
+  }
+
+  .organization-login-page .login-submit {
+    height: 52px;
+
+    margin-top: 7px;
+  }
+}
