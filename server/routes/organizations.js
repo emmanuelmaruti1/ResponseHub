@@ -1,274 +1,356 @@
+
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const pool = require("../db");
+
+const {
+  authenticationLimiter,
+} = require("../middleware/security");
 
 const router = express.Router();
-const pool = require("../db");
 
 // =====================================================
 // REGISTER ORGANIZATION
 // POST /api/organizations/register
 // =====================================================
 
-router.post("/register", async (req, res) => {
-  try {
-    const {
-      organizationId,
-      name,
-      email,
-      phone,
-      password,
-    } = req.body;
+router.post(
+  "/register",
+  authenticationLimiter,
+  async (req, res) => {
+    try {
+      const {
+        organizationId,
+        name,
+        email,
+        phone,
+        password,
+      } = req.body || {};
 
-    // -------------------------------------------------
-    // VALIDATION
-    // -------------------------------------------------
+      // Validate input types and required fields.
+      if (
+        typeof name !== "string" ||
+        !name.trim() ||
+        typeof email !== "string" ||
+        !email.trim() ||
+        typeof password !== "string" ||
+        !password
+      ) {
+        return res.status(400).json({
+          message:
+            "Organization name, email and password are required.",
+        });
+      }
 
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        message:
-          "Organization name, email and password are required.",
-      });
-    }
+      const cleanName = name.trim();
+      const cleanEmail = email.trim().toLowerCase();
 
-    if (password.length < 8) {
-      return res.status(400).json({
-        message:
-          "Password must be at least 8 characters long.",
-      });
-    }
+      if (cleanName.length > 150) {
+        return res.status(400).json({
+          message:
+            "Organization name must not exceed 150 characters.",
+        });
+      }
 
-    // -------------------------------------------------
-    // CHECK EMAIL
-    // -------------------------------------------------
+      if (cleanEmail.length > 254) {
+        return res.status(400).json({
+          message: "Email address is too long.",
+        });
+      }
 
-    const existingEmail = await pool.query(
-      `
-      SELECT id
-      FROM organizations
-      WHERE LOWER(email) = LOWER($1)
-      `,
-      [email]
-    );
+      if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
+      ) {
+        return res.status(400).json({
+          message: "Please provide a valid email address.",
+        });
+      }
 
-    if (existingEmail.rows.length > 0) {
-      return res.status(409).json({
-        message:
-          "An organization with this email already exists.",
-      });
-    }
+      if (password.length < 8) {
+        return res.status(400).json({
+          message:
+            "Password must be at least 8 characters long.",
+        });
+      }
 
-    // -------------------------------------------------
-    // GENERATE ORGANIZATION ID
-    // -------------------------------------------------
+      if (password.length > 128) {
+        return res.status(400).json({
+          message:
+            "Password must not exceed 128 characters.",
+        });
+      }
 
-    const finalOrganizationId =
-      organizationId ||
-      `ORG-${Date.now()}-${Math.floor(
-        1000 + Math.random() * 9000
-      )}`;
+      // Check for an existing email.
+      const existingEmail = await pool.query(
+        `
+        SELECT id
+        FROM organizations
+        WHERE LOWER(TRIM(email)) = $1
+        LIMIT 1
+        `,
+        [cleanEmail]
+      );
 
-    // -------------------------------------------------
-    // CHECK ORGANIZATION ID
-    // -------------------------------------------------
+      if (existingEmail.rows.length > 0) {
+        return res.status(409).json({
+          message:
+            "An organization with this email already exists.",
+        });
+      }
 
-    const existingOrganizationId =
-      await pool.query(
+      // Generate an organization ID if one was not supplied.
+      const finalOrganizationId =
+        typeof organizationId === "string" &&
+        organizationId.trim()
+          ? organizationId.trim()
+          : `ORG-${Date.now()}-${Math.floor(
+              1000 + Math.random() * 9000
+            )}`;
+
+      if (finalOrganizationId.length > 100) {
+        return res.status(400).json({
+          message: "Organization ID is too long.",
+        });
+      }
+
+      // Check for an existing organization ID.
+      const existingOrganizationId = await pool.query(
         `
         SELECT id
         FROM organizations
         WHERE organization_id = $1
+        LIMIT 1
         `,
         [finalOrganizationId]
       );
 
-    if (existingOrganizationId.rows.length > 0) {
-      return res.status(409).json({
+      if (existingOrganizationId.rows.length > 0) {
+        return res.status(409).json({
+          message:
+            "This organization ID already exists.",
+        });
+      }
+
+      // Validate optional phone input.
+      if (
+        phone !== undefined &&
+        phone !== null &&
+        typeof phone !== "string"
+      ) {
+        return res.status(400).json({
+          message: "Phone number must be text.",
+        });
+      }
+
+      const cleanPhone =
+        typeof phone === "string" && phone.trim()
+          ? phone.trim()
+          : null;
+
+      // Hash password before storage.
+      const passwordHash = await bcrypt.hash(
+        password,
+        12
+      );
+
+      const result = await pool.query(
+        `
+        INSERT INTO organizations (
+          organization_id,
+          name,
+          email,
+          phone,
+          password_hash
+        )
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING
+          id,
+          organization_id,
+          name,
+          email,
+          phone,
+          created_at
+        `,
+        [
+          finalOrganizationId,
+          cleanName,
+          cleanEmail,
+          cleanPhone,
+          passwordHash,
+        ]
+      );
+
+      return res.status(201).json({
         message:
-          "This organization ID already exists.",
+          "Organization registered successfully.",
+        organization: result.rows[0],
+      });
+    } catch (error) {
+      console.error(
+        "Organization registration error:",
+        error.message || error
+      );
+
+      // Handle concurrent duplicate registrations when the
+      // database has a unique constraint on the relevant field.
+      if (error.code === "23505") {
+        return res.status(409).json({
+          message:
+            "An organization with these details already exists.",
+        });
+      }
+
+      return res.status(500).json({
+        message: "Failed to register organization.",
       });
     }
-
-    // -------------------------------------------------
-    // HASH PASSWORD
-    // -------------------------------------------------
-
-    const passwordHash = await bcrypt.hash(
-      password,
-      12
-    );
-
-    // -------------------------------------------------
-    // CREATE ORGANIZATION
-    // -------------------------------------------------
-
-    const result = await pool.query(
-      `
-      INSERT INTO organizations (
-        organization_id,
-        name,
-        email,
-        phone,
-        password_hash
-      )
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING
-        id,
-        organization_id,
-        name,
-        email,
-        phone,
-        created_at
-      `,
-      [
-        finalOrganizationId,
-        name,
-        email,
-        phone || null,
-        passwordHash,
-      ]
-    );
-
-    res.status(201).json({
-      message:
-        "Organization registered successfully.",
-      organization: result.rows[0],
-    });
-  } catch (error) {
-    console.error(
-      "Organization registration error:",
-      error.message
-    );
-
-    res.status(500).json({
-      message:
-        "Failed to register organization.",
-    });
   }
-});
+);
 
 // =====================================================
 // LOGIN ORGANIZATION
 // POST /api/organizations/login
 // =====================================================
 
-router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+router.post(
+  "/login",
+  authenticationLimiter,
+  async (req, res) => {
+    try {
+      const { email, password } = req.body || {};
 
-    // -------------------------------------------------
-    // VALIDATION
-    // -------------------------------------------------
+      if (
+        typeof email !== "string" ||
+        !email.trim() ||
+        typeof password !== "string" ||
+        !password
+      ) {
+        return res.status(400).json({
+          message: "Email and password are required.",
+        });
+      }
 
-    if (!email || !password) {
-      return res.status(400).json({
-        message:
-          "Email and password are required.",
-      });
-    }
+      const cleanEmail = email.trim().toLowerCase();
 
-    // -------------------------------------------------
-    // FIND ORGANIZATION
-    // -------------------------------------------------
+      if (cleanEmail.length > 254 || password.length > 128) {
+        return res.status(400).json({
+          message: "Invalid email or password.",
+        });
+      }
 
-    const result = await pool.query(
-      `
-      SELECT
-        id,
-        organization_id,
-        name,
-        email,
-        phone,
-        password_hash,
-        created_at
-      FROM organizations
-      WHERE LOWER(email) = LOWER($1)
-      `,
-      [email]
-    );
+      // Find organization.
+      const result = await pool.query(
+        `
+        SELECT
+          id,
+          organization_id,
+          name,
+          email,
+          phone,
+          password_hash,
+          created_at
+        FROM organizations
+        WHERE LOWER(TRIM(email)) = $1
+        LIMIT 1
+        `,
+        [cleanEmail]
+      );
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({
-        message:
-          "Invalid email or password.",
-      });
-    }
+      if (result.rows.length === 0) {
+        return res.status(401).json({
+          message: "Invalid email or password.",
+        });
+      }
 
-    const organization = result.rows[0];
+      const organization = result.rows[0];
 
-    // -------------------------------------------------
-    // CHECK PASSWORD
-    // -------------------------------------------------
+      if (!organization.password_hash) {
+        return res.status(401).json({
+          message: "Invalid email or password.",
+        });
+      }
 
-    const passwordMatches =
-      await bcrypt.compare(
+      // Verify password.
+      const passwordMatches = await bcrypt.compare(
         password,
         organization.password_hash
       );
 
-    if (!passwordMatches) {
-      return res.status(401).json({
-        message:
-          "Invalid email or password.",
+      if (!passwordMatches) {
+        return res.status(401).json({
+          message: "Invalid email or password.",
+        });
+      }
+
+      // Check JWT configuration.
+      if (!process.env.JWT_SECRET) {
+        console.error(
+          "JWT_SECRET is not configured."
+        );
+
+        return res.status(500).json({
+          message:
+            "Authentication configuration error.",
+        });
+      }
+
+      // Preserve the existing JWT claim names.
+      const token = jwt.sign(
+        {
+          id: organization.id,
+          organizationId: organization.organization_id,
+          email: organization.email,
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "8h",
+        }
+      );
+
+      // Never return the stored password hash.
+      delete organization.password_hash;
+
+      return res.status(200).json({
+        message: "Login successful.",
+        token,
+        expiresIn: "8h",
+        organization,
       });
-    }
-
-    // -------------------------------------------------
-    // CHECK JWT SECRET
-    // -------------------------------------------------
-
-    if (!process.env.JWT_SECRET) {
+    } catch (error) {
       console.error(
-        "JWT_SECRET is not configured."
+        "Organization login error:",
+        error.message || error
       );
 
       return res.status(500).json({
-        message:
-          "Authentication configuration error.",
+        message: "Login failed.",
       });
     }
+  }
+);
 
-    // -------------------------------------------------
-    // CREATE JWT
-    // -------------------------------------------------
+// GET /api/organizations
+// Public list of organizations available to citizens
+router.get("/", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        organization_id AS "organizationId",
+        name,
+        email,
+        phone
+      FROM organizations
+      ORDER BY name ASC
+    `);
 
-    const token = jwt.sign(
-      {
-        id: organization.id,
-        organizationId:
-          organization.organization_id,
-        email: organization.email,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "8h",
-      }
-    );
-
-    // -------------------------------------------------
-    // REMOVE PASSWORD HASH
-    // -------------------------------------------------
-
-    delete organization.password_hash;
-
-    // -------------------------------------------------
-    // SEND RESPONSE
-    // -------------------------------------------------
-
-    res.json({
-      message: "Login successful.",
-      token,
-      expiresIn: "8h",
-      organization,
-    });
+    return res.status(200).json(result.rows);
   } catch (error) {
-    console.error(
-      "Organization login error:",
-      error.message
-    );
+    console.error("Failed to fetch organizations:", error.message);
 
-    res.status(500).json({
-      message: "Login failed.",
+    return res.status(500).json({
+      message: "Failed to load organizations.",
     });
   }
 });

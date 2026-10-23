@@ -134,17 +134,49 @@ function Report() {
   // Holds the successful submission so the reporter can see the Case ID.
   const [submittedReport, setSubmittedReport] = useState(null);
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("responsehub_organizations");
-      const parsed = saved ? JSON.parse(saved) : [];
+ useEffect(() => {
+  let cancelled = false;
 
-      setOrganizations(Array.isArray(parsed) ? parsed : []);
-    } catch (err) {
-      console.error("Failed to load organizations:", err);
-      setOrganizations([]);
+  async function loadOrganizations() {
+    try {
+      const response = await fetch(`${API_URL}/organizations`);
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to load organizations (${response.status})`
+        );
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid organizations response.");
+      }
+
+      if (!cancelled) {
+        setOrganizations(data);
+
+        // Keep local storage in sync for existing frontend logic.
+        localStorage.setItem(
+          "responsehub_organizations",
+          JSON.stringify(data)
+        );
+      }
+    } catch (error) {
+      console.error("Failed to load organizations:", error);
+
+      if (!cancelled) {
+        setOrganizations([]);
+      }
     }
-  }, []);
+  }
+
+  loadOrganizations();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
