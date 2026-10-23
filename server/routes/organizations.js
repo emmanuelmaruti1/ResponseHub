@@ -246,6 +246,33 @@ router.post("/login", authenticationLimiter, async (req, res) => {
   }
 });
 
+// TEMPORARY DATABASE DIAGNOSTIC
+router.get("/diagnostic", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        current_database() AS database_name,
+        current_schema() AS current_schema,
+        current_setting('search_path') AS search_path,
+        to_regclass('public.organizations') AS organizations_table,
+        (
+          SELECT COUNT(*)
+          FROM public.organizations
+        ) AS organization_count
+    `);
+
+    return res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error("Database diagnostic failed:", error.message);
+
+    return res.status(500).json({
+      message: "Database diagnostic failed.",
+      error: error.message,
+      code: error.code,
+    });
+  }
+});
+
 // =====================================================
 // LIST ORGANIZATIONS
 // GET /api/organizations
