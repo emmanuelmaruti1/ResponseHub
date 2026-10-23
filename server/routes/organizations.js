@@ -208,7 +208,7 @@ router.post(
         message: "Failed to register organization.",
       });
     }
-  }
+  
 );
 
 // =====================================================
