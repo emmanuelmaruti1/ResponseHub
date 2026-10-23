@@ -186,12 +186,15 @@ router.post(
           "Organization registered successfully.",
         organization: result.rows[0],
       });
-    } catch (error) {
-      console.error(
-        "Organization registration error:",
-        error.message || error
-      );
-
+    } 
+    
+    catch (error) {
+  console.error("Failed to fetch organizations:", error);
+  return res.status(500).json({
+    message: "Failed to load organizations.",
+    error: error.message,
+  });
+}
       // Handle concurrent duplicate registrations when the
       // database has a unique constraint on the relevant field.
       if (error.code === "23505") {
