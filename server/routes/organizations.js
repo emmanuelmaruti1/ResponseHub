@@ -279,25 +279,27 @@ router.get("/diagnostic", async (req, res) => {
 // Public list used by the citizen report form
 // =====================================================
 
-router.get("/", async (req, res) => {
+router.get("/diagnostic", async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT
-         id,
-         organization_id AS "organizationId",
-         name,
-         email,
-         phone
-       FROM organizations
-       ORDER BY name ASC`
-    );
+    const result = await pool.query(`
+      SELECT
+        current_database() AS database_name,
+        current_user AS database_user,
+        inet_server_addr()::text AS server_address,
+        current_schema() AS current_schema,
+        current_setting('search_path') AS search_path,
+        to_regclass('public.organizations')::text AS organizations_table,
+        to_regclass('public.reports')::text AS reports_table
+    `);
 
-    return res.status(200).json(result.rows);
+    return res.status(200).json(result.rows[0]);
   } catch (error) {
-    console.error("Failed to fetch organizations:", error);
+    console.error("Database diagnostic failed:", error.message);
 
     return res.status(500).json({
-      message: "Failed to load organizations.",
+      message: "Database diagnostic failed.",
+      error: error.message,
+      code: error.code,
     });
   }
 });
