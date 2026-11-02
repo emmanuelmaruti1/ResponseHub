@@ -245,34 +245,30 @@ router.post("/login", authenticationLimiter, async (req, res) => {
     });
   }
 });
-
 // =====================================================
 // LIST ORGANIZATIONS
 // GET /api/organizations
 // Public list used by the citizen report form
 // =====================================================
 
-router.get("/diagnostic", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
-        current_database() AS database_name,
-        current_user AS database_user,
-        inet_server_addr()::text AS server_address,
-        current_schema() AS current_schema,
-        current_setting('search_path') AS search_path,
-        to_regclass('public.organizations')::text AS organizations_table,
-        to_regclass('public.reports')::text AS reports_table
+        id,
+        organization_id AS "organizationId",
+        name
+      FROM organizations
+      ORDER BY name ASC
     `);
 
-    return res.status(200).json(result.rows[0]);
+   return res.status(200).json(result.rows);
+   
   } catch (error) {
-    console.error("Database diagnostic failed:", error.message);
+    console.error("Public organization list failed:", error.message);
 
     return res.status(500).json({
-      message: "Database diagnostic failed.",
-      error: error.message,
-      code: error.code,
+      message: "Unable to load organizations.",
     });
   }
 });
